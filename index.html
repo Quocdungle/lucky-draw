@@ -268,18 +268,70 @@
 
       /* Mobile Responsive */
       @media (max-width: 768px) {
+        /* Use mobile background image and stack left above right */
+        body {
+          background-image: url("mobile.png");
+          background-size: cover;
+          background-position: center;
+        }
+
         .container {
           grid-template-columns: 1fr;
           grid-template-areas:
-            "right"
-            "left"; /* show wheel (right) above left on mobile */
+            "left"
+            "right"; /* left panel on top, right panel below on mobile */
         }
         .left-panel {
           min-width: auto;
           padding: 24px;
+          padding-top: 150px; /* reduce large top offset for mobile */
         }
         .right-panel {
-          padding: 20px;
+          padding: 12px;
+        }
+
+        /* Make the wheel and its controls smaller */
+        .wheel-wrapper {
+          max-width: 320px; /* smaller wheel on mobile */
+          margin-bottom: 12px;
+        }
+        #spin-btn {
+          width: 22%;
+        }
+        #gif {
+          width: 20%;
+          bottom: 6px;
+          right: 6px;
+        }
+
+        /* Compact legend and input */
+        .legend {
+          gap: 8px;
+          margin-top: 8px;
+        }
+        .legend-item {
+          padding: 2px 6px;
+          font-size: 11px;
+        }
+        .legend-color {
+          width: 10px;
+          height: 10px;
+        }
+
+        .input-section {
+          max-width: 200px;
+          flex-direction: column;
+          gap: 8px;
+          margin: 12px auto;
+        }
+        .input-section input {
+          padding: 10px;
+          font-size: 14px;
+          border-radius: 6px;
+        }
+        button.primary-btn {
+          padding: 10px 16px;
+          font-size: 14px;
         }
       }
     </style>
@@ -292,13 +344,13 @@
         <!-- Legend and code input moved here per request -->
         <div class="legend" aria-hidden="false">
           <div class="legend-item">
-            <span class="legend-color red"></span>Hạng vé 1800
+            <span class="legend-color orange"></span>Orange (1.800.000đ)
           </div>
           <div class="legend-item">
-            <span class="legend-color green"></span>Hạng vé 1600
+            <span class="legend-color green"></span>Green (1.600.000đ)
           </div>
           <div class="legend-item">
-            <span class="legend-color yellow"></span>Hạng vé 1400
+            <span class="legend-color yellow"></span>Yellow (1.400.000đ)
           </div>
         </div>
 
@@ -380,7 +432,7 @@
     <script>
       // CẤU HÌNH URL API TỪ GOOGLE SHEET Ở BƯỚC 1
       const SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbykH31GJAdwBG5XrqwRHhdZbegvEyPbbtYw8IQMDWhFjGEGcC9F8JyHeT9t4-fwBfnM/exec";
+        "https://script.google.com/macros/s/AKfycbynNUsQDXkvCC-iCHF6d6B57Q_ZM_UIlnzMvnuvpyoiAkbMxKa16rl_vy2hLBf_xUE_/exec";
 
       const wheel = document.getElementById("wheel");
       const codeInput = document.getElementById("code-input");
@@ -404,15 +456,23 @@
 
       const prizes = [
         // percent ở đây chỉ để tham khảo hiển thị, logic random đã nằm ở server
-        { name: "Voucher 1.800.000đ", color: "red", minDeg: 15, maxDeg: 105 },
         {
-          name: "Voucher 1.400.000đ",
+          key: "Voucher 1.800.000đ",
+          name: "Orange (1.800.000đ)",
+          color: "red",
+          minDeg: 15,
+          maxDeg: 105,
+        },
+        {
+          key: "Voucher 1.600.000đ",
+          name: "Green (1.600.000đ)",
           color: "yellow",
           minDeg: 135,
           maxDeg: 225,
         },
         {
-          name: "Voucher 1.600.000đ",
+          key: "Voucher 1.400.000đ",
+          name: "Blue (1.400.000đ)",
           color: "green",
           minDeg: 255,
           maxDeg: 345,
@@ -462,7 +522,7 @@
         document.getElementById("code-input").disabled = true;
 
         // Tìm đối tượng giải thưởng tương ứng trong danh sách prizes
-        const selectedPrize = prizes.find((p) => p.name === targetPrizeName);
+        const selectedPrize = prizes.find((p) => p.key === targetPrizeName);
 
         if (!selectedPrize) {
           alert("Lỗi dữ liệu giải thưởng!");
