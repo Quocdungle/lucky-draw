@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vòng Quay May Mắn</title>
+    <style>
+      :root {
+        --primary-color: #ffde00;
+        --text-color: #333;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-image: url("web.png");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container {
+        display: flex;
+        width: 90%;
+        max-width: 1200px;
+        /* background: rgba(255, 255, 255, 0.1); */
+        /* backdrop-filter: blur(5px); */
+        border-radius: 20px;
+        /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); */
+        overflow: hidden;
+        flex-wrap: wrap;
+      }
+
+      /* Phần bên trái: Thể lệ */
+      .left-panel {
+        flex: 1;
+        min-width: 300px;
+        /* background: #fff; */
+        padding: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .rules-box h2 {
+        color: #d32f2f;
+        text-transform: uppercase;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .rules-list {
+        line-height: 1.6;
+        color: #555;
+      }
+
+      .highlight {
+        color: #d32f2f;
+        font-weight: bold;
+      }
+
+      /* Phần bên phải: Vòng quay */
+      .right-panel {
+        flex: 1.5;
+        min-width: 350px;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .wheel-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 500px; /* Điều chỉnh kích thước vòng quay */
+        aspect-ratio: 1/1;
+        margin-bottom: 20px;
+      }
+
+      #wheel {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.4));
+      }
+
+      #spin-btn {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 25%; /* Kích thước nút so với vòng quay */
+        cursor: pointer;
+        z-index: 10;
+        transition: transform 0.2s;
+      }
+
+      #spin-btn:active {
+        transform: translate(-50%, -50%) scale(0.95);
+      }
+
+      /* Input Code Section */
+      .input-section {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        max-width: 400px;
+        margin-top: 20px;
+      }
+
+      /* Legend under the wheel */
+      .legend {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #222;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      }
+
+      .legend-color {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        display: inline-block;
+      }
+
+      .legend-color.red {
+        background: #e53935;
+      }
+      .legend-color.yellow {
+        background: #ffde00;
+      }
+      .legend-color.green {
+        background: #43a047;
+      }
+
+      input[type="text"] {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #fff;
+        border-radius: 8px;
+        font-size: 16px;
+        outline: none;
+        text-transform: uppercase;
+      }
+
+      button.primary-btn {
+        padding: 12px 24px;
+        background: #d32f2f;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      button.primary-btn:hover {
+        background: #b71c1c;
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      /* Modal Form */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 100;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        position: relative;
+      }
+
+      .modal h2 {
+        color: #d32f2f;
+      }
+
+      .prize-display {
+        font-size: 24px;
+        color: #2e7d32;
+        margin: 20px 0;
+        font-weight: bold;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+        text-align: left;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+
+      #loading {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        z-index: 200;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column-reverse; /* Đưa vòng quay lên trên rules ở mobile */
+        }
+        .left-panel {
+          min-width: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">Đang xử lý...</div>
+
+    <div class="container">
+      <div class="left-panel">
+        <div class="rules-box">
+          <h2>Thể Lệ Vòng Quay</h2>
+          <ul class="rules-list">
+            <li>Mỗi mã code tương ứng với 1 lượt quay.</li>
+            <li>Mã code chỉ sử dụng được 1 lần duy nhất.</li>
+            <li>
+              Cơ cấu giải thưởng:
+              <ul>
+                <li>
+                  <span class="highlight">Giải Đặc Biệt: Voucher 1tr8</span>
+                </li>
+                <li>Giải Nhì: Voucher 1tr6</li>
+                <li>Giải Ba: Voucher 1tr4</li>
+              </ul>
+            </li>
+            <li>Vui lòng nhập thông tin chính xác để nhận quà.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="right-panel">
+        <div class="wheel-wrapper">
+          <img src="Vòng quay.png" id="wheel" alt="Wheel" />
+          <img
+            src="Nút bấm quay.png"
+            id="spin-btn"
+            alt="Spin"
+            onclick="validateAndSpin()"
+          />
+        </div>
+
+        <div class="legend" aria-hidden="false">
+          <div class="legend-item">
+            <span class="legend-color red"></span>Hạng vé 1800
+          </div>
+          <div class="legend-item">
+            <span class="legend-color green"></span>Hạng vé 1600
+          </div>
+          <div class="legend-item">
+            <span class="legend-color yellow"></span>Hạng vé 1400
+          </div>
+        </div>
+
+        <div class="input-section">
+          <input
+            type="text"
+            id="code-input"
+            placeholder="Nhập mã code của bạn..."
+          />
+          <button
+            class="primary-btn"
+            id="check-btn"
+            onclick="validateAndSpin()"
+          >
+            QUAY NGAY
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="prizeModal" class="modal">
+      <div class="modal-content">
+        <h2>🎉 CHÚC MỪNG 🎉</h2>
+        <p>Bạn đã trúng giải thưởng:</p>
+        <div id="prize-name" class="prize-display"></div>
+        <p>Vui lòng điền thông tin để nhận thưởng:</p>
+
+        <form id="winner-form" onsubmit="submitWinner(event)">
+          <div class="form-group">
+            <label>Họ và Tên</label>
+            <input
+              type="text"
+              id="fullname"
+              required
+              placeholder="Nhập họ và tên của bạn"
+            />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              id="email"
+              required
+              placeholder="Nhập email của bạn"
+            />
+          </div>
+          <div class="form-group">
+            <label>Số điện thoại</label>
+            <input
+              type="tel"
+              id="phone"
+              pattern="[0-9]{10}"
+              required
+              title="Vui lòng nhập đúng 10 số điện thoại"
+              placeholder="Nhập số điện thoại của bạn"
+            />
+          </div>
+          <button type="submit" class="primary-btn" style="width: 100%">
+            NHẬN THƯỞNG
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // CẤU HÌNH URL API TỪ GOOGLE SHEET Ở BƯỚC 1
+      const SCRIPT_URL =
+        "https://script.google.com/macros/s/AKfycbykH31GJAdwBG5XrqwRHhdZbegvEyPbbtYw8IQMDWhFjGEGcC9F8JyHeT9t4-fwBfnM/exec";
+
+      const wheel = document.getElementById("wheel");
+      const codeInput = document.getElementById("code-input");
+      const modal = document.getElementById("prizeModal");
+      const loading = document.getElementById("loading");
+
+      let currentDeg = 0;
+      let isSpinning = false;
+      let currentCode = "";
+      let currentPrize = "";
+
+      // Logic tỉ lệ trúng thưởng
+      // 20% = 1tr8, 40% = 1tr6, 40% = 1tr4
+      // Dựa vào ảnh:
+      // Đỏ (1 góc lớn): Giả sử là 1tr8
+      // Xanh lá: 1tr6
+      // Vàng: 1tr4
+      // Cần chỉnh lại góc quay cho khớp với hình ảnh thực tế của bạn.
+      // Giả sử ảnh: 3 phần bằng nhau (120 độ mỗi phần)
+      // 0-120: Đỏ (1tr8), 120-240: Vàng (1tr4), 240-360: Xanh (1tr6)
+
+      const prizes = [
+        {
+          name: "Voucher 1.800.000đ",
+          color: "red",
+          minDeg: 15,
+          maxDeg: 105,
+          percent: 20,
+        },
+        {
+          name: "Voucher 1.400.000đ",
+          color: "yellow",
+          minDeg: 135,
+          maxDeg: 225,
+          percent: 40,
+        },
+        {
+          name: "Voucher 1.600.000đ",
+          color: "green",
+          minDeg: 255,
+          maxDeg: 345,
+          percent: 40,
+        },
+      ];
+
+      async function validateAndSpin() {
+        if (isSpinning) return;
+
+        const code = codeInput.value.trim().toUpperCase();
+        if (!code) {
+          alert("Vui lòng nhập mã code!");
+          return;
+        }
+
+        loading.style.display = "flex";
+
+        try {
+          // Gọi API check code
+          const response = await fetch(
+            `${SCRIPT_URL}?action=check_code&code=${code}`
+          );
+          const data = await response.json();
+
+          if (data.status === "success") {
+            currentCode = code;
+            loading.style.display = "none";
+            startSpin();
+          } else {
+            loading.style.display = "none";
+            alert(data.message); // Code sai hoặc đã dùng
+          }
+        } catch (error) {
+          loading.style.display = "none";
+          alert("Lỗi kết nối! Vui lòng thử lại.");
+          console.error(error);
+        }
+      }
+
+      function startSpin() {
+        isSpinning = true;
+        document.getElementById("check-btn").disabled = true;
+        document.getElementById("code-input").disabled = true;
+
+        // Tính toán giải thưởng dựa trên tỉ lệ
+        const rand = Math.random() * 100;
+        let selectedPrize;
+        let cumulative = 0;
+
+        for (let p of prizes) {
+          cumulative += p.percent;
+          if (rand < cumulative) {
+            selectedPrize = p;
+            break;
+          }
+        }
+
+        // Tính góc quay để kim chỉ vào vùng giải thưởng
+        // Random một góc trong khoảng cho phép của giải đó
+        const stopAngle =
+          Math.floor(
+            Math.random() * (selectedPrize.maxDeg - selectedPrize.minDeg + 1)
+          ) + selectedPrize.minDeg;
+
+        // Quay ít nhất 5 vòng (1800 độ) + góc dừng
+        // Lưu ý: CSS rotate quay theo chiều kim đồng hồ.
+        // Nếu kim chỉ ở 12h, thì góc dừng thực tế trên ảnh phải trừ đi.
+        // Để đơn giản, ta xoay ảnh. Muốn kim (cố định) chỉ vào Đỏ, thì Đỏ phải nằm ở vị trí kim.
+
+        // Giả sử kim ở hướng 12h (trên cùng).
+        // Logic quay:
+        const totalRotation = 360 * 10 + (360 - stopAngle);
+
+        currentDeg += totalRotation;
+        currentPrize = selectedPrize.name;
+
+        wheel.style.transform = `rotate(${currentDeg}deg)`;
+
+        // Đợi quay xong (5s theo CSS)
+        setTimeout(() => {
+          isSpinning = false;
+          showWinnerForm();
+        }, 5000);
+      }
+
+      function showWinnerForm() {
+        document.getElementById("prize-name").innerText = currentPrize;
+        // Highlight nếu là giải đặc biệt
+        if (currentPrize.includes("1.800.000")) {
+          document.getElementById("prize-name").style.color = "red";
+          document.getElementById("prize-name").style.fontSize = "30px";
+          alert("CHÚC MỪNG! BẠN ĐÃ TRÚNG GIẢI ĐẶC BIỆT!");
+        }
+        modal.style.display = "flex";
+      }
+
+      async function submitWinner(e) {
+        e.preventDefault();
+        loading.style.display = "flex";
+
+        const name = document.getElementById("fullname").value;
+        const email = document.getElementById("email").value;
+        const phone = document.getElementById("phone").value;
+
+        // Xây dựng URL để gửi data (dùng GET request cho đơn giản để tránh CORS phức tạp với GAS free)
+        // Lưu ý: data được gửi công khai trên URL, với dữ liệu nhạy cảm thực tế nên dùng POST
+        // Nhưng với GAS Web App free, GET ổn định hơn cho người mới.
+
+        const params = new URLSearchParams({
+          action: "save_winner",
+          code: currentCode,
+          name: name,
+          email: email,
+          phone: phone,
+          prize: currentPrize,
+        });
+
+        try {
+          // Sử dụng fetch mode no-cors nếu gặp lỗi CORS,
+          // nhưng ở đây ta dùng redirect form của GAS JSON trả về nên try standard fetch
+          await fetch(`${SCRIPT_URL}?${params.toString()}`, {
+            method: "POST",
+          });
+
+          // Vì Apps Script đôi khi trả về redirect làm fetch không đọc được JSON trực tiếp nếu không cấu hình kỹ
+          // Ta cứ mặc định thành công nếu không lỗi mạng
+
+          loading.style.display = "none";
+          modal.style.display = "none";
+          alert("Đã lưu thông tin nhận thưởng thành công! Cảm ơn bạn.");
+          location.reload(); // Reset game
+        } catch (error) {
+          loading.style.display = "none";
+          alert("Đã có lỗi xảy ra hoặc đã lưu thành công.");
+          location.reload();
+        }
+      }
+    </script>
+  </body>
+</html>
