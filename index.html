@@ -31,7 +31,7 @@
         /* backdrop-filter: blur(5px); */
         border-radius: 20px;
         /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); */
-        overflow: hidden;
+        overflow: visible;
         grid-template-columns: 1fr 1fr; /* two equal columns */
         grid-template-areas: "left right";
         gap: 24px;
@@ -496,6 +496,16 @@
       const codeInput = document.getElementById("code-input");
       const modal = document.getElementById("prizeModal");
       const loading = document.getElementById("loading");
+
+      // Allow pressing Enter in the input to trigger validateAndSpin()
+      if (codeInput) {
+        codeInput.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            validateAndSpin();
+          }
+        });
+      }
 
       let currentDeg = 0;
       let isSpinning = false;
