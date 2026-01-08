@@ -40,7 +40,7 @@
       /* Phần bên trái: Thể lệ */
       .left-panel {
         grid-area: left;
-        min-width: 300px;
+        min-width: 350px;
         /* background: #fff; */
         padding: 80px;
         padding-top: 200px;
@@ -77,6 +77,7 @@
         align-items: center;
         justify-content: center;
         position: relative;
+        overflow: visible;
       }
 
       .wheel-wrapper {
@@ -85,6 +86,8 @@
         max-width: 500px; /* Điều chỉnh kích thước vòng quay */
         aspect-ratio: 1/1;
         margin-bottom: 20px;
+        z-index: 3; /* ensure wheel is above background elements */
+        overflow: visible;
       }
 
       #wheel {
@@ -115,6 +118,43 @@
         z-index: 5;
         transition: transform 0.2s;
       }
+      #co4la {
+        position: absolute;
+        bottom: 12px;
+        left: -30px;
+        width: 20%; /* Kích thước nút so với vòng quay */
+        cursor: pointer;
+        z-index: 5;
+        transition: transform 0.2s;
+      }
+
+      #chan {
+        position: absolute;
+        bottom: -20px; /* place slightly below the wheel */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 30%; /* Kích thước nút so với vòng quay */
+        cursor: pointer;
+        z-index: 1; /* put under wheel-wrapper and legend */
+        transition: transform 0.2s;
+      }
+
+      /* Ensure legend sits above the background/chan */
+      .legend {
+        position: relative;
+        z-index: 4;
+      }
+      #congmam {
+        position: absolute;
+        top: -70px; /* align to bottom of wheel-wrapper */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20%; /* make it more visible */
+        cursor: pointer;
+        z-index: 2; /* below the wheel (wheel-wrapper z-index:3) */
+        transition: transform 0.2s;
+        pointer-events: none; /* pass clicks to wheel above if needed */
+      }
 
       #spin-btn:active {
         transform: translate(-50%, -50%) scale(0.95);
@@ -123,7 +163,11 @@
       /* Input Code Section */
       .input-section {
         display: flex;
+        flex-direction: column;
         justify-content: center;
+        padding: 60px 40px;
+        border-radius: 12px;
+        background: #fff;
         gap: 10px;
         width: 100%;
         max-width: 400px;
@@ -300,8 +344,8 @@
           width: 22%;
         }
         #gif {
-          width: 20%;
-          bottom: 6px;
+          width: 30%;
+          bottom: -20px;
           right: 6px;
         }
 
@@ -340,6 +384,12 @@
         .modal-content {
           width: 80%;
         }
+        #chan {
+          bottom: -8px; /* place slightly below the wheel */
+        }
+        #congmam {
+          top: -50px; /* align to bottom of wheel-wrapper */
+        }
       }
     </style>
   </head>
@@ -374,6 +424,8 @@
             onclick="validateAndSpin()"
           />
           <img src="gif.gif" id="gif" />
+          <img src="co.png" id="co4la" />
+          <img src="congmam.png" id="congmam" />
         </div>
         <!-- Legend and code input moved here per request -->
         <div class="legend" aria-hidden="false">
@@ -387,7 +439,7 @@
             <span class="legend-color yellow"></span>Yellow (1.400.000đ)
           </div>
         </div>
-
+        <img src="chan.png" id="chan" />
         <!-- Legend and input moved to left panel -->
       </div>
     </div>
