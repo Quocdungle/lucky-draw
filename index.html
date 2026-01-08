@@ -44,6 +44,7 @@
         /* background: #fff; */
         padding: 80px;
         padding-top: 200px;
+        padding-left: 160px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -284,6 +285,7 @@
           min-width: auto;
           padding: 24px;
           padding-top: 155px; /* reduce large top offset for mobile */
+          padding-left: 50px;
         }
         .right-panel {
           padding: 12px;
@@ -306,12 +308,7 @@
         /* Compact legend and input */
         .legend {
           display: flex;
-          flex-direction: column;
           gap: 8px;
-          margin: 8px auto; /* center block horizontally */
-          align-items: center; /* center items horizontally */
-          justify-content: center; /* center items vertically inside legend */
-          max-width: 220px;
           width: 100%;
         }
         .legend-item {
@@ -335,8 +332,8 @@
           border-radius: 6px;
         }
         button.primary-btn {
-          padding: 5px 10px;
-          font-size: 10px;
+          padding: 8px 14px;
+          font-size: 12px;
           max-width: 100px;
           margin: 0 auto;
         }
@@ -351,19 +348,6 @@
 
     <div class="container">
       <div class="left-panel">
-        <!-- Legend and code input moved here per request -->
-        <div class="legend" aria-hidden="false">
-          <div class="legend-item">
-            <span class="legend-color orange"></span>Orange (1.800.000đ)
-          </div>
-          <div class="legend-item">
-            <span class="legend-color green"></span>Green (1.600.000đ)
-          </div>
-          <div class="legend-item">
-            <span class="legend-color yellow"></span>Yellow (1.400.000đ)
-          </div>
-        </div>
-
         <div class="input-section">
           <input
             type="text"
@@ -390,6 +374,18 @@
             onclick="validateAndSpin()"
           />
           <img src="gif.gif" id="gif" />
+        </div>
+        <!-- Legend and code input moved here per request -->
+        <div class="legend" aria-hidden="false">
+          <div class="legend-item">
+            <span class="legend-color orange"></span>Orange (1.800.000đ)
+          </div>
+          <div class="legend-item">
+            <span class="legend-color green"></span>Green (1.600.000đ)
+          </div>
+          <div class="legend-item">
+            <span class="legend-color yellow"></span>Yellow (1.400.000đ)
+          </div>
         </div>
 
         <!-- Legend and input moved to left panel -->
