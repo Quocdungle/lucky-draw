@@ -333,7 +333,7 @@
         }
         button.primary-btn {
           padding: 8px 14px;
-          font-size: 12px;
+          font-size: 10px;
           max-width: 100px;
           margin: 0 auto;
         }
@@ -560,12 +560,6 @@
 
       function showWinnerForm() {
         document.getElementById("prize-name").innerText = currentPrize;
-        // Highlight nếu là giải đặc biệt
-        if (currentPrize.includes("1.800.000")) {
-          document.getElementById("prize-name").style.color = "red";
-          document.getElementById("prize-name").style.fontSize = "30px";
-          alert("CHÚC MỪNG! BẠN ĐÃ TRÚNG GIẢI ĐẶC BIỆT!");
-        }
         modal.style.display = "flex";
       }
 
