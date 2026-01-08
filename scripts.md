@@ -1,4 +1,4 @@
-<!-- var sheetId = 'YOUR_SPREADSHEET_ID_HERE'; // Thay ID Sheet của bạn vào đây
+<!-- var sheetId = '1tGkb36fnSNMLkodPvsqfax8Ik_xjPw3rwiPMtIoxoaI'; // Thay ID Sheet của bạn vào đây
 
 function doGet(e) {
   return handleRequest(e);
@@ -10,25 +10,27 @@ function doPost(e) {
 
 function handleRequest(e) {
   var lock = LockService.getScriptLock();
-  lock.tryLock(10000);
+  lock.tryLock(10000); // Khóa 10s để tránh 2 người cùng giật 1 giải cuối cùng
 
   try {
     var action = e.parameter.action;
     var ss = SpreadsheetApp.openById(sheetId);
 
-    // 1. Kiểm tra Code (CHỈ KIỂM TRA, KHÔNG ĐÁNH DẤU 'Used')
+    // --- CHECK CODE VÀ QUAY SỐ TẠI SERVER ---
     if (action == 'check_code') {
       var code = e.parameter.code;
       var sheet = ss.getSheetByName('Codes');
       var data = sheet.getDataRange().getValues();
       var rowIndex = -1;
 
+      // 1. Tìm dòng chứa code
       for (var i = 1; i < data.length; i++) {
-        if (String(data[i][0]) == String(code)) {
-          if (String(data[i][1]).toLowerCase() == 'used') {
+        if (data[i][0] == code) {
+          // Nếu đã dùng rồi thì báo lỗi
+          if (data[i][1] == 'Used') {
             return responseJSON({ status: 'error', message: 'Mã này đã được sử dụng!' });
           }
-          rowIndex = i + 1;
+          rowIndex = i + 1; // Số dòng trong Sheet (index + 1)
           break;
         }
       }
@@ -37,60 +39,66 @@ function handleRequest(e) {
         return responseJSON({ status: 'error', message: 'Mã code không tồn tại!' });
       }
 
-      // Không đánh dấu 'Used' ở bước kiểm tra. Chỉ trả về thành công.
-      return responseJSON({ status: 'success', message: 'Code hợp lệ' });
+      // 2. Tính toán kho giải thưởng còn lại
+      // Tổng giới hạn: 10 vé 1tr8, 20 vé 1tr6, 20 vé 1tr4
+      var limits = {
+        "Voucher 1.800.000đ": 10,
+        "Voucher 1.600.000đ": 20,
+        "Voucher 1.400.000đ": 20
+      };
+
+      var usedCount = {
+        "Voucher 1.800.000đ": 0,
+        "Voucher 1.600.000đ": 0,
+        "Voucher 1.400.000đ": 0
+      };
+
+      // Đếm số giải đã trao trong cột C (index 2)
+      for (var i = 1; i < data.length; i++) {
+        var p = data[i][2]; // Cột C
+        if (p && usedCount.hasOwnProperty(p)) {
+          usedCount[p]++;
+        }
+      }
+
+      // Tạo "hộp" phiếu thăm dựa trên số lượng còn lại
+      var pool = [];
+      for (var key in limits) {
+        var remaining = limits[key] - usedCount[key];
+        for (var k = 0; k < remaining; k++) {
+          pool.push(key);
+        }
+      }
+
+      // Xử lý trường hợp hết sạch giải (hiếm khi xảy ra nếu tính đúng 50 code)
+      if (pool.length === 0) {
+        return responseJSON({ status: 'error', message: 'Đã hết giải thưởng!' });
+      }
+
+      // 3. Bốc thăm ngẫu nhiên từ pool
+      var randomIndex = Math.floor(Math.random() * pool.length);
+      var selectedPrize = pool[randomIndex];
+
+      // 4. Lưu ngay kết quả vào Sheet (Đánh dấu đã dùng và giải trúng)
+      sheet.getRange(rowIndex, 2).setValue('Used');         // Cột B
+      sheet.getRange(rowIndex, 3).setValue(selectedPrize);  // Cột C (Lưu hạng vé)
+
+      // Trả về giải thưởng cho Frontend quay
+      return responseJSON({ status: 'success', prize: selectedPrize });
     }
 
-    // 2. Lưu thông tin người trúng và ĐÁNH DẤU 'Used' (kiểm tra lại tại thời điểm lưu)
+    // --- LƯU THÔNG TIN NGƯỜI TRÚNG ---
     if (action == 'save_winner') {
-      var code = e.parameter.code;
-      var sheetCodes = ss.getSheetByName('Codes');
-      var data = sheetCodes.getDataRange().getValues();
-      var rowIndex = -1;
-
-      for (var i = 1; i < data.length; i++) {
-        if (String(data[i][0]) == String(code)) {
-          rowIndex = i + 1;
-          break;
-        }
-      }
-
-      if (rowIndex == -1) {
-        return responseJSON({ status: 'error', message: 'Mã code không tồn tại!' });
-      }
-
-      var statusCell = sheetCodes.getRange(rowIndex, 2);
-      var status = String(statusCell.getValue());
-      if (status.toLowerCase() == 'used') {
-        return responseJSON({ status: 'error', message: 'Mã này đã được sử dụng!' });
-      }
-
-      // Đánh dấu 'Used' trước khi lưu Winners để tránh race condition
-      statusCell.setValue('Used');
-
-      var sheetW = ss.getSheetByName('Winners');
-      sheetW.appendRow([
+      var sheet = ss.getSheetByName('Winners');
+      sheet.appendRow([
         new Date(),
-        code,
+        e.parameter.code,
         e.parameter.name,
         e.parameter.email,
         e.parameter.phone,
-        e.parameter.prize
+        e.parameter.prize // Giải thưởng được frontend gửi lên lại để confirm
       ]);
-
       return responseJSON({ status: 'success', message: 'Đã lưu thông tin' });
-    }
-
-    // 3. Trả về tổng số mã và số đã dùng (dùng cho client status)
-    if (action == 'count_codes') {
-      var sheetCodes = ss.getSheetByName('Codes');
-      var vals = sheetCodes.getDataRange().getValues();
-      var total = Math.max(0, vals.length - 1);
-      var used = 0;
-      for (var i = 1; i < vals.length; i++) {
-        if (String(vals[i][1]).toLowerCase() == 'used') used++;
-      }
-      return responseJSON({ status: 'success', used: used, total: total });
     }
 
   } catch (e) {
@@ -104,5 +112,4 @@ function responseJSON(data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
-}
- -->
+} -->

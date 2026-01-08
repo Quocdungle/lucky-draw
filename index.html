@@ -24,23 +24,26 @@
       }
 
       .container {
-        display: flex;
+        display: grid;
         width: 90%;
-        max-width: 1200px;
+        /* max-width: 1200px; */
         /* background: rgba(255, 255, 255, 0.1); */
         /* backdrop-filter: blur(5px); */
         border-radius: 20px;
         /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); */
         overflow: hidden;
-        flex-wrap: wrap;
+        grid-template-columns: 1fr 1fr; /* two equal columns */
+        grid-template-areas: "left right";
+        gap: 24px;
       }
 
       /* Phần bên trái: Thể lệ */
       .left-panel {
-        flex: 1;
+        grid-area: left;
         min-width: 300px;
         /* background: #fff; */
         padding: 80px;
+        padding-top: 200px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -65,7 +68,7 @@
 
       /* Phần bên phải: Vòng quay */
       .right-panel {
-        flex: 1.5;
+        grid-area: right;
         min-width: 350px;
         padding: 30px;
         display: flex;
@@ -102,6 +105,16 @@
         transition: transform 0.2s;
       }
 
+      #gif {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 35%; /* Kích thước nút so với vòng quay */
+        cursor: pointer;
+        z-index: 5;
+        transition: transform 0.2s;
+      }
+
       #spin-btn:active {
         transform: translate(-50%, -50%) scale(0.95);
       }
@@ -109,10 +122,11 @@
       /* Input Code Section */
       .input-section {
         display: flex;
+        justify-content: center;
         gap: 10px;
         width: 100%;
         max-width: 400px;
-        margin-top: 20px;
+        margin: 20px auto; /* center horizontally and provide vertical spacing */
       }
 
       /* Legend under the wheel */
@@ -157,11 +171,10 @@
       input[type="text"] {
         flex: 1;
         padding: 12px;
-        border: 2px solid #fff;
+        border: 2px solid #000;
         border-radius: 8px;
         font-size: 16px;
         outline: none;
-        text-transform: uppercase;
       }
 
       button.primary-btn {
@@ -256,10 +269,17 @@
       /* Mobile Responsive */
       @media (max-width: 768px) {
         .container {
-          flex-direction: column-reverse; /* Đưa vòng quay lên trên rules ở mobile */
+          grid-template-columns: 1fr;
+          grid-template-areas:
+            "right"
+            "left"; /* show wheel (right) above left on mobile */
         }
         .left-panel {
           min-width: auto;
+          padding: 24px;
+        }
+        .right-panel {
+          padding: 20px;
         }
       }
     </style>
@@ -269,37 +289,7 @@
 
     <div class="container">
       <div class="left-panel">
-        <div class="rules-box">
-          <h2>Thể Lệ Vòng Quay</h2>
-          <ul class="rules-list">
-            <li>Mỗi mã code tương ứng với 1 lượt quay.</li>
-            <li>Mã code chỉ sử dụng được 1 lần duy nhất.</li>
-            <li>
-              Cơ cấu giải thưởng:
-              <ul>
-                <li>
-                  <span class="highlight">Giải Đặc Biệt: Voucher 1tr8</span>
-                </li>
-                <li>Giải Nhì: Voucher 1tr6</li>
-                <li>Giải Ba: Voucher 1tr4</li>
-              </ul>
-            </li>
-            <li>Vui lòng nhập thông tin chính xác để nhận quà.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="right-panel">
-        <div class="wheel-wrapper">
-          <img src="Vòng quay.png" id="wheel" alt="Wheel" />
-          <img
-            src="Nút bấm quay.png"
-            id="spin-btn"
-            alt="Spin"
-            onclick="validateAndSpin()"
-          />
-        </div>
-
+        <!-- Legend and code input moved here per request -->
         <div class="legend" aria-hidden="false">
           <div class="legend-item">
             <span class="legend-color red"></span>Hạng vé 1800
@@ -326,6 +316,21 @@
             QUAY NGAY
           </button>
         </div>
+      </div>
+
+      <div class="right-panel">
+        <div class="wheel-wrapper">
+          <img src="Vòng quay.png" id="wheel" alt="Wheel" />
+          <img
+            src="Nút bấm quay.png"
+            id="spin-btn"
+            alt="Spin"
+            onclick="validateAndSpin()"
+          />
+          <img src="gif.gif" id="gif" />
+        </div>
+
+        <!-- Legend and input moved to left panel -->
       </div>
     </div>
 
@@ -358,9 +363,8 @@
           <div class="form-group">
             <label>Số điện thoại</label>
             <input
-              type="tel"
+              type="number"
               id="phone"
-              pattern="[0-9]{10}"
               required
               title="Vui lòng nhập đúng 10 số điện thoại"
               placeholder="Nhập số điện thoại của bạn"
@@ -399,26 +403,19 @@
       // 0-120: Đỏ (1tr8), 120-240: Vàng (1tr4), 240-360: Xanh (1tr6)
 
       const prizes = [
-        {
-          name: "Voucher 1.800.000đ",
-          color: "red",
-          minDeg: 15,
-          maxDeg: 105,
-          percent: 20,
-        },
+        // percent ở đây chỉ để tham khảo hiển thị, logic random đã nằm ở server
+        { name: "Voucher 1.800.000đ", color: "red", minDeg: 15, maxDeg: 105 },
         {
           name: "Voucher 1.400.000đ",
           color: "yellow",
           minDeg: 135,
           maxDeg: 225,
-          percent: 40,
         },
         {
           name: "Voucher 1.600.000đ",
           color: "green",
           minDeg: 255,
           maxDeg: 345,
-          percent: 40,
         },
       ];
 
@@ -442,11 +439,15 @@
 
           if (data.status === "success") {
             currentCode = code;
+            // SERVER TRẢ VỀ GIẢI THƯỞNG LUÔN (data.prize)
+            const serverPrizeName = data.prize;
+
             loading.style.display = "none";
-            startSpin();
+            // Bắt đầu quay tới giải thưởng server đã chọn
+            startSpin(serverPrizeName);
           } else {
             loading.style.display = "none";
-            alert(data.message); // Code sai hoặc đã dùng
+            alert(data.message);
           }
         } catch (error) {
           loading.style.display = "none";
@@ -455,46 +456,36 @@
         }
       }
 
-      function startSpin() {
+      function startSpin(targetPrizeName) {
         isSpinning = true;
         document.getElementById("check-btn").disabled = true;
         document.getElementById("code-input").disabled = true;
 
-        // Tính toán giải thưởng dựa trên tỉ lệ
-        const rand = Math.random() * 100;
-        let selectedPrize;
-        let cumulative = 0;
+        // Tìm đối tượng giải thưởng tương ứng trong danh sách prizes
+        const selectedPrize = prizes.find((p) => p.name === targetPrizeName);
 
-        for (let p of prizes) {
-          cumulative += p.percent;
-          if (rand < cumulative) {
-            selectedPrize = p;
-            break;
-          }
+        if (!selectedPrize) {
+          alert("Lỗi dữ liệu giải thưởng!");
+          return;
         }
 
-        // Tính góc quay để kim chỉ vào vùng giải thưởng
-        // Random một góc trong khoảng cho phép của giải đó
+        // Tính góc quay random trong phạm vi của ô giải thưởng đó
         const stopAngle =
           Math.floor(
             Math.random() * (selectedPrize.maxDeg - selectedPrize.minDeg + 1)
           ) + selectedPrize.minDeg;
 
-        // Quay ít nhất 5 vòng (1800 độ) + góc dừng
-        // Lưu ý: CSS rotate quay theo chiều kim đồng hồ.
-        // Nếu kim chỉ ở 12h, thì góc dừng thực tế trên ảnh phải trừ đi.
-        // Để đơn giản, ta xoay ảnh. Muốn kim (cố định) chỉ vào Đỏ, thì Đỏ phải nằm ở vị trí kim.
-
-        // Giả sử kim ở hướng 12h (trên cùng).
-        // Logic quay:
+        // Logic quay: Quay 10 vòng + góc lẻ để dừng đúng vị trí
+        // Công thức: 360 * số vòng + (360 - góc dừng)
+        // (Vì transform rotate quay theo chiều kim đồng hồ, nên để kim chỉ vào góc X thì ảnh phải quay ngược lại 360-X)
         const totalRotation = 360 * 10 + (360 - stopAngle);
 
         currentDeg += totalRotation;
-        currentPrize = selectedPrize.name;
+        currentPrize = selectedPrize.name; // Gán giải thưởng hiện tại
 
         wheel.style.transform = `rotate(${currentDeg}deg)`;
 
-        // Đợi quay xong (5s theo CSS)
+        // Đợi quay xong (5s)
         setTimeout(() => {
           isSpinning = false;
           showWinnerForm();
